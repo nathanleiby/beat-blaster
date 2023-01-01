@@ -13,6 +13,7 @@ export default function BeatGrid2D(props: BeatGrid2DProps) {
   const xOffset = 0;
   const ySpacing = 1;
   const yOffset = 0;
+  const yTotal = props.beatGroup.length * beatWidth;
 
   useEffect(() => {
     const interval = setInterval(() => Date.now(), 25);
@@ -22,26 +23,22 @@ export default function BeatGrid2D(props: BeatGrid2DProps) {
 
   const { beatGroup } = props;
   return (
-    <Stage width={800} height={600}>
+    <Stage width={800} height={yTotal + 10}>
       <Layer>
         {/* background */}
         <Rect
           x={yOffset * beatWidth}
           y={xOffset * beatWidth}
           width={16 * beatWidth}
-          height={props.beatGroup.length * 1.5 * beatWidth}
+          height={yTotal}
           fill="lightgray"
         />
         {_.range(16).map((n) => (
           <Line
+            key={n}
             x={xOffset * beatWidth}
             y={yOffset * beatWidth}
-            points={[
-              n * beatWidth,
-              0,
-              n * beatWidth,
-              props.beatGroup.length * 1.5 * beatWidth,
-            ]}
+            points={[n * beatWidth, 0, n * beatWidth, yTotal]}
             tension={0.5}
             closed
             stroke="black"
@@ -53,6 +50,7 @@ export default function BeatGrid2D(props: BeatGrid2DProps) {
 
         {_.range(beatGroup.length).map((n) => (
           <Line
+            key={n}
             x={xOffset * beatWidth}
             y={yOffset * beatWidth}
             points={[
@@ -71,15 +69,18 @@ export default function BeatGrid2D(props: BeatGrid2DProps) {
         ))}
 
         {beatGroup.map((beats, bgIdx) => {
-          return beats.map((beat) => {
+          return beats.map((beat, bIdx) => {
             return (
               <Rect
+                key={`${bgIdx}-${bIdx}`}
                 x={(xOffset + beat.start) * beatWidth}
                 y={(yOffset + bgIdx * ySpacing) * beatWidth}
                 width={beat.duration * beatWidth}
                 height={beatWidth / 2}
                 fill={beatColors[bgIdx % beatColors.length]}
-                shadowBlur={beatWidth / 10}
+                stroke={"black"}
+
+                // shadowBlur={beatWidth / 10}
               />
             );
           });
