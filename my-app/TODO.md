@@ -1,15 +1,25 @@
 Basic Framework
 
+RESET
+
+- [ ] create a basic sampler framework in ToneJS (kick, snare, etc)
+- [ ] enable visualizing that
+- [ ] show moving bar on grid
+- [ ] show moving bar in relation to position
+
+---
+
 - [x] render a grid (4/4 measure)
 - [...] render imported midi file onto grid
   - [x] manually converted here and outputted TS file for clear types https://tonejs.github.io/Midi/
   - [x] display JSON from parsed midi
-  - [ ] parse midi in code.
+  - [ ] parse midi in code
+    - [ ] blocked on loading a midi file via React app, so i can convert (file-loader, etc)
 - [ ] show moving bar on grid
 - [ ] show moving bar in relation to midi position
   - [ ] https://animate.style/
   - [ ] https://www.react-spring.dev/docs/getting-started
-- [ ] play midi file as audio
+- [ ] play audio
   - [ ] play midi: https://codesandbox.io/s/tonejs-midi-vfwdz?file=%2FMIDI%2FLEAD.json%3A571-572
   - https://github.com/surikov/midi-sounds-react
   - sequencer example: https://github.com/surikov/midi-sounds-react-examples/tree/master/examples/midi-sounds-example6
@@ -46,3 +56,16 @@ visual libs:
 
 - https://editor.p5js.org/ , konva
 - also some game libs? excaliburjs, etc
+
+inspiration:
+
+- https://onlinesequencer.net/import2/b22c7eb74bf7bb2dd3053d17ae00d145?title=Afrobeats+%28100+BPM%29.mid
+- https://github.com/AskAlice/react-three-midi
+
+--
+
+learning about tonejs
+
+- https://www.devbridge.com/articles/tonejs-coding-music-production-guide/
+- https://observablehq.com/@tmcw/playing-with-tone-js
+- https://redacademy.github.io/tonejs-starter/
