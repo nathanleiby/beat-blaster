@@ -1,30 +1,20 @@
 Basic Framework
 
-RESET
-
-- [ ] create a basic sampler framework in ToneJS (kick, snare, etc)
-- [ ] enable visualizing that
-- [ ] show moving bar on grid
-- [ ] show moving bar in relation to position
+- figure out how to update 1 note in a sequence while it's playing (looping sequencer)
+- then build UI to click to add/remove beat from instrument
 
 ---
 
-- [x] render a grid (4/4 measure)
-- [...] render imported midi file onto grid
-  - [x] manually converted here and outputted TS file for clear types https://tonejs.github.io/Midi/
-  - [x] display JSON from parsed midi
+- [ ] midi
   - [ ] parse midi in code
     - [ ] blocked on loading a midi file via React app, so i can convert (file-loader, etc)
-- [ ] show moving bar on grid
-- [ ] show moving bar in relation to midi position
-  - [ ] https://animate.style/
-  - [ ] https://www.react-spring.dev/docs/getting-started
 - [ ] play audio
   - [ ] play midi: https://codesandbox.io/s/tonejs-midi-vfwdz?file=%2FMIDI%2FLEAD.json%3A571-572
   - https://github.com/surikov/midi-sounds-react
   - sequencer example: https://github.com/surikov/midi-sounds-react-examples/tree/master/examples/midi-sounds-example6
 - [ ] add a extra line to the grid for "user input events"
 - [ ] track and display "user input events" (keypress)
+  - [ ] https://dev.to/shimphillip/building-a-piano-with-tone-js-5c2f
 - [ ] track multiple user input events, separately (e.g. different keypress per midi line)
 - [ ] allow midi input, not just keyboard
 
@@ -69,3 +59,9 @@ learning about tonejs
 - https://www.devbridge.com/articles/tonejs-coding-music-production-guide/
 - https://observablehq.com/@tmcw/playing-with-tone-js
 - https://redacademy.github.io/tonejs-starter/
+- https://pdm.lsupathways.org/3_audio/2_synthsandmusic/
+
+--
+example sequencer likes
+
+- https://codesandbox.io/s/tonejs-forked-9hs2y?file=%2Fsrc%2Findex.js

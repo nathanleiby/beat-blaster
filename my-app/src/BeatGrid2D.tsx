@@ -13,11 +13,8 @@ import { Layer, Line, Rect, Stage } from "react-konva";
 import * as Tone from "tone";
 import { MembraneSynth, Transport } from "tone";
 import { Beat, beatColors } from "./beats";
-import midiData from "./midiData";
 
 interface PlayerProps {
-  track: typeof midiData.tracks[0];
-  metronome: any[];
   kicks: any[];
   snares: any[];
 }
@@ -85,7 +82,8 @@ IVChord.push("D2", "C4");
 export const Player = (props: PlayerProps) => {
   let [playing, setPlaying] = useBoolean(false);
   let [bpm, setBPM] = useState(145);
-  const { track, kicks, snares, metronome } = props;
+
+  const { kicks, snares } = props;
 
   let loopRef = useRef<Tone.Loop>();
 
@@ -114,23 +112,28 @@ export const Player = (props: PlayerProps) => {
       },
     }).connect(lowPass);
 
-    // const loopStart = Tone.now() + "1m";
     const loopDuration = "1m";
+    // Tone.Transport.loop = true;
+    // Tone.Transport.loopStart = "0";
+    // Tone.Transport.loopEnd = loopDuration;
+    // metronome.forEach((note) => {
+    //   metronomeSynth.triggerAttackRelease(
+    //     "C5",
+    //     "32n",
+    //     Tone.Time(note.time).toSeconds()
+    //   );
+    // });
+    // const loopStart = Tone.now() + "1m";
     const makeLoop = () => {
       // let lt = "0";
       //schedule all of the events
       if (loopRef?.current) {
-        loopRef.current.cancel();
+        // loopRef.current.cancel("@1m");
+        loopRef.current.stop();
       }
       loopRef.current = new Tone.Loop(function (looptime) {
         console.log("loop:", looptime);
-        metronome.forEach((note) => {
-          metronomeSynth.triggerAttackRelease(
-            "C5",
-            "32n",
-            Tone.Time(note.time).toSeconds() + looptime
-          );
-        });
+
         kicks.forEach((note) => {
           kickDrum.triggerAttackRelease(
             "C1",
@@ -151,10 +154,10 @@ export const Player = (props: PlayerProps) => {
         //   console.log("snare:", time, looptime);
         //   snareDrum.triggerAttackRelease("4n", time + looptime);
         // }, snares).start(0);
-      }, loopDuration).start();
+      }, loopDuration).start("@1m");
     };
     makeLoop();
-  }, []);
+  }, [kicks, snares]);
 
   useEffect(() => {
     Transport.bpm.value = bpm;
@@ -170,11 +173,15 @@ export const Player = (props: PlayerProps) => {
 
   return (
     <>
-      <Button onClick={() => setPlaying.toggle()}>
+      <Button
+        onClick={async () => {
+          await Tone.start();
+          setPlaying.toggle();
+        }}
+      >
         {playing ? "Stop" : "Play"}
       </Button>
-      <div>{Tone.Transport.position.toString()}</div>
-      <div>{Tone.Transport.loop.toString()}</div>
+      <div>{}</div>
       <div>{Tone.Transport.loopStart.toString()}</div>
       <NumberInput
         value={bpm}
@@ -192,6 +199,31 @@ export const Player = (props: PlayerProps) => {
   );
 };
 
+const KICK1 = [
+  { time: "0:0" },
+  { time: "0:1" },
+  { time: "0:2" },
+  { time: "0:3" },
+];
+
+const KICK2 = [
+  { time: "0:0" },
+  { time: "0:0:2" },
+  { time: "0:1" },
+  { time: "0:2" },
+  { time: "0:3" },
+];
+
+const KICK3 = [{ time: "0:0" }, { time: "0:2" }, { time: "0:3" }];
+
+const SNARE1 = [{ time: "0:2" }];
+const SNARE2 = [{ time: "0:1" }, { time: "0:3" }];
+const SNARE3 = [{ time: "0:3:1" }, { time: "0:3:3" }];
+
+const TICK_SCALE = 192;
+
+const LOOP_LENGTH_TICKS = 4 * TICK_SCALE; // 4 quarter notes
+
 export default function BeatGrid2D(props: BeatGrid2DProps) {
   const beatWidth = 50;
   // todo: solve left offset and veritical offset via CSS positioning of grid on the page
@@ -200,79 +232,147 @@ export default function BeatGrid2D(props: BeatGrid2DProps) {
   const yOffset = 0;
   const yTotal = props.beatGroup.length * beatWidth;
 
+  const metronome = [{ time: "0:0" }];
+
+  const [kicks, setKicks] = useState(KICK1);
+
+  const [snares, setSnares] = useState(SNARE1);
+  let [transportPos, setTransportPos] = useState<Tone.Unit.Time>();
+  const linePos =
+    (Tone.Time(transportPos).toTicks() % LOOP_LENGTH_TICKS) / TICK_SCALE;
+
+  useEffect(() => {
+    Tone.Transport.scheduleRepeat((time) => {
+      setTransportPos(Tone.Transport.position);
+    }, "32n");
+  });
   useEffect(() => {
     const interval = setInterval(() => Date.now(), 25);
 
     return () => clearInterval(interval);
   }, []);
 
-  const { beatGroup } = props;
+  // const { beatGroup } = props;
+
+  const beatGroup = [
+    kicks.map((t) => {
+      return {
+        start: Tone.Time(t.time).toTicks() / TICK_SCALE,
+        duration: 0.5,
+      };
+    }),
+    snares.map((t) => {
+      return {
+        start: Tone.Time(t.time).toTicks() / TICK_SCALE,
+        duration: 0.5,
+      };
+    }),
+  ];
+
+  console.log({ beatGroup });
   return (
-    <Stage width={800} height={yTotal + 10}>
-      <Layer>
-        {/* background */}
-        <Rect
-          x={yOffset * beatWidth}
-          y={xOffset * beatWidth}
-          width={16 * beatWidth}
-          height={yTotal}
-          fill="lightgray"
-        />
-        {_.range(16).map((n) => (
+    <>
+      <Button
+        onClick={async () => {
+          const item = _.sample([KICK1, KICK2, KICK3]);
+          console.log(item);
+          setKicks(item!);
+        }}
+      >
+        Kicks
+      </Button>
+
+      <Button
+        onClick={async () => {
+          const item = _.sample([SNARE1, SNARE2, SNARE3]);
+          console.log(item);
+          setSnares(item!);
+        }}
+      >
+        Snares
+      </Button>
+
+      <Player kicks={kicks} snares={snares} />
+
+      <Stage width={800} height={yTotal + 10}>
+        <Layer>
+          {/* background */}
+          <Rect
+            x={yOffset * beatWidth}
+            y={xOffset * beatWidth}
+            width={16 * beatWidth}
+            height={yTotal}
+            fill="lightgray"
+          />
+          {_.range(16).map((n) => (
+            <Line
+              key={n}
+              x={xOffset * beatWidth}
+              y={yOffset * beatWidth}
+              points={[n * beatWidth, 0, n * beatWidth, yTotal]}
+              tension={0.5}
+              closed
+              stroke="black"
+              fillLinearGradientStartPoint={{ x: -50, y: -50 }}
+              fillLinearGradientEndPoint={{ x: 50, y: 50 }}
+              fillLinearGradientColorStops={[0, "red", 1, "yellow"]}
+            />
+          ))}
+
+          {_.range(beatGroup.length).map((n) => (
+            <Line
+              key={n}
+              x={xOffset * beatWidth}
+              y={yOffset * beatWidth}
+              points={[
+                0,
+                (yOffset + n * ySpacing) * beatWidth,
+                16 * beatWidth,
+                (yOffset + n * ySpacing) * beatWidth,
+              ]}
+              tension={0.5}
+              closed
+              stroke="black"
+              fillLinearGradientStartPoint={{ x: -50, y: -50 }}
+              fillLinearGradientEndPoint={{ x: 50, y: 50 }}
+              fillLinearGradientColorStops={[0, "red", 1, "yellow"]}
+            />
+          ))}
+
+          {beatGroup.map((beats, bgIdx) => {
+            return beats.map((beat, bIdx) => {
+              return (
+                <>
+                  <Rect
+                    key={`${bgIdx}-${bIdx}`}
+                    x={(xOffset + beat.start) * beatWidth}
+                    y={(yOffset + bgIdx * ySpacing) * beatWidth}
+                    width={beat.duration * beatWidth}
+                    height={beatWidth / 2}
+                    fill={beatColors[bgIdx % beatColors.length]}
+                    stroke={"black"}
+
+                    // shadowBlur={beatWidth / 10}
+                  />
+                </>
+              );
+            });
+          })}
+
+          {/* position */}
           <Line
-            key={n}
             x={xOffset * beatWidth}
             y={yOffset * beatWidth}
-            points={[n * beatWidth, 0, n * beatWidth, yTotal]}
+            points={[linePos * beatWidth, 0, linePos * beatWidth, yTotal]}
             tension={0.5}
             closed
-            stroke="black"
+            stroke="white"
             fillLinearGradientStartPoint={{ x: -50, y: -50 }}
             fillLinearGradientEndPoint={{ x: 50, y: 50 }}
             fillLinearGradientColorStops={[0, "red", 1, "yellow"]}
           />
-        ))}
-
-        {_.range(beatGroup.length).map((n) => (
-          <Line
-            key={n}
-            x={xOffset * beatWidth}
-            y={yOffset * beatWidth}
-            points={[
-              0,
-              (yOffset + n * ySpacing) * beatWidth,
-              16 * beatWidth,
-              (yOffset + n * ySpacing) * beatWidth,
-            ]}
-            tension={0.5}
-            closed
-            stroke="black"
-            fillLinearGradientStartPoint={{ x: -50, y: -50 }}
-            fillLinearGradientEndPoint={{ x: 50, y: 50 }}
-            fillLinearGradientColorStops={[0, "red", 1, "yellow"]}
-          />
-        ))}
-
-        {beatGroup.map((beats, bgIdx) => {
-          return beats.map((beat, bIdx) => {
-            return (
-              <>
-                <Rect
-                  key={`${bgIdx}-${bIdx}`}
-                  x={(xOffset + beat.start) * beatWidth}
-                  y={(yOffset + bgIdx * ySpacing) * beatWidth}
-                  width={beat.duration * beatWidth}
-                  height={beatWidth / 2}
-                  fill={beatColors[bgIdx % beatColors.length]}
-                  stroke={"black"}
-
-                  // shadowBlur={beatWidth / 10}
-                />
-              </>
-            );
-          });
-        })}
-      </Layer>
-    </Stage>
+        </Layer>
+      </Stage>
+    </>
   );
 }
