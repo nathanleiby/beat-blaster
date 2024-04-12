@@ -35,7 +35,9 @@
     "start": "PORT=3001 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -53,6 +55,8 @@
     ]
   },
   "devDependencies": {
+    "gh-pages": "^6.1.1",
     "raw.macro": "^0.7.0"
-  }
+  },
+  "homepage": "https://nathanleiby.github.io/beat-blaster"
 }
